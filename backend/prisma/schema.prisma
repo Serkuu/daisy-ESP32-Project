@@ -30,16 +30,25 @@ model Garden {
 }
 
 model Plant {
-  id                   Int             @id @default(autoincrement())
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
-  plantName            String
-  optimalMoistureLevel Int
-  garden               Garden?         @relation(fields: [gardenId], references: [id])
-  gardenId             Int?
-  user                 User            @relation(fields: [userId], references: [id])
-  userId               Int
-  sensor               MoistureSensor?
+  id                     Int             @id @default(autoincrement())
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  plantName              String
+  imageUrl               String?
+  plantSpecies           String?
+  plantDescription       String?
+  sunlightPreference     String?
+  wateringIntervalSummer Int?
+  wateringIntervalWinter Int?
+  lastWateredAt          DateTime?
+  nextWateredAt          DateTime?
+  optimalMoistureLevel   Int?
+  isToxicToPets          Boolean?
+  garden                 Garden?         @relation(fields: [gardenId], references: [id])
+  gardenId               Int?
+  user                   User            @relation(fields: [userId], references: [id])
+  userId                 Int
+  sensor                 MoistureSensor?
 }
 
 model MoistureSensor {

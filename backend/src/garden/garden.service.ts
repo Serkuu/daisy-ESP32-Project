@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class GardenService {
   constructor(private prisma: PrismaService) { }
+
   create(createGardenDto: CreateGardenDto, userId: number) {
     return this.prisma.garden.create({
       data: {
@@ -46,7 +47,9 @@ export class GardenService {
       where: {
         id
       },
-      data: { ...updateGardenDto }
+      data: {
+        ...updateGardenDto
+      }
     });
   }
 

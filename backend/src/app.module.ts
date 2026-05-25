@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { GardenModule } from './garden/garden.module';
+import { PlantModule } from './plant/plant.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { GardenModule } from './garden/garden.module';
     }),
     AuthModule,
     PrismaModule,
-    GardenModule
+    GardenModule,
+    PlantModule
   ],
   controllers: [AppController],
   providers: [AppService],
