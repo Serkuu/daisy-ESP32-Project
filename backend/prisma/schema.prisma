@@ -73,7 +73,7 @@ model MoistureHistory {
   batteryLevel  Int?
 }
 
-//HeadUnit może być przypisany do Garden, ale musi być przypisany do User
+// HeadUnit can be assigned to a Garden, but must be assigned to a User
 model HeadUnit {
   id         Int                  @id @default(autoincrement())
   createdAt  DateTime             @default(now())

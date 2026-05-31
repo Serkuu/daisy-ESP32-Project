@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/Button';
 
 function Dashboard() {
   const [gardens, setGardens] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(location.state?.successMessage || '');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,12 +59,44 @@ function Dashboard() {
           <h1 style={{ fontSize: '48px', marginBottom: '8px' }}>Twoje Ogrody</h1>
           <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Zarządzaj swoimi roślinami i urządzeniami.</p>
         </div>
-        <Button variant="secondary" onClick={handleLogout}>Wyloguj się</Button>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <Button onClick={() => navigate('/add-garden')}>Nowy ogród</Button>
+          <Button onClick={() => navigate('/add-plant')}>Dodaj roślinę</Button>
+          <Button variant="secondary" onClick={handleLogout}>Wyloguj się</Button>
+        </div>
       </div>
 
+      {success && (
+        <div style={{
+          backgroundColor: 'var(--color-positive)',
+          color: '#ffffff',
+          padding: '16px',
+          borderRadius: 'var(--rounded-md)',
+          marginBottom: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: '600'
+        }}>
+          <span>{success}</span>
+          <button type="button" onClick={() => setSuccess('')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', lineHeight: '1' }}>&times;</button>
+        </div>
+      )}
+
       {error && (
-        <div style={{ backgroundColor: 'var(--color-negative)', color: '#fff', padding: '16px', borderRadius: 'var(--rounded-md)', marginBottom: '24px' }}>
-          {error}
+        <div style={{
+          backgroundColor: 'var(--color-negative-deep)',
+          color: '#ffffff',
+          padding: '16px',
+          borderRadius: 'var(--rounded-md)',
+          marginBottom: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: '600'
+        }}>
+          <span>{error}</span>
+          <button type="button" onClick={() => setError('')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', lineHeight: '1' }}>&times;</button>
         </div>
       )}
 
@@ -80,7 +114,7 @@ function Dashboard() {
           <p style={{ color: 'var(--color-mute)', marginBottom: '32px', fontSize: '18px' }}>
             Dodaj swój pierwszy ogród i tchnij życie w to miejsce.
           </p>
-          <Button onClick={() => alert('Wkrótce dodamy formularz tworzenia ogrodu!')}>Stwórz pierwszy Ogród</Button>
+          <Button onClick={() => navigate('/add-garden')}>Stwórz pierwszy ogród</Button>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
@@ -95,9 +129,10 @@ function Dashboard() {
             }}
               onMouseOver={e => e.currentTarget.style.transform = 'translateY(-4px)'}
               onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+              onClick={() => navigate(`/garden/${garden.id}`)}
             >
-              <h3 style={{ fontSize: '24px', marginBottom: '8px' }}>{garden.name}</h3>
-              <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Miejsce: {garden.location || 'Nie podano'}</p>
+              <h3 style={{ fontSize: '24px', marginBottom: '8px' }}>{garden.gardenName}</h3>
+              <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Liczba roślin: {garden.plants?.length || 0}</p>
             </div>
           ))}
         </div>

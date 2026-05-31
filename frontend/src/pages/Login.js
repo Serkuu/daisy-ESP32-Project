@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/Button';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const location = useLocation();
   const navigate = useNavigate();
+  const [success, setSuccess] = useState(location.state?.successMessage || '');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ function Login() {
         throw new Error(data.message || 'Błędny email lub hasło.');
       }
 
-      console.log("Sukces, zapisuję token JWT.");
+      console.log("Success, saving JWT token.");
       localStorage.setItem('access_token', data.access_token);
       navigate('/dashboard');
 
@@ -55,6 +57,23 @@ function Login() {
           Zaloguj się, by zadbać o swoje rośliny.
         </p>
 
+        {success && (
+          <div style={{
+            backgroundColor: 'var(--color-positive)',
+            color: '#ffffff',
+            padding: '16px',
+            borderRadius: 'var(--rounded-md)',
+            marginBottom: '24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontWeight: '600'
+          }}>
+            <span>{success}</span>
+            <button type="button" onClick={() => setSuccess('')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', lineHeight: '1' }}>&times;</button>
+          </div>
+        )}
+
         {error && (
           <div style={{
             backgroundColor: 'var(--color-negative-deep)',
@@ -62,10 +81,13 @@ function Login() {
             padding: '16px',
             borderRadius: 'var(--rounded-md)',
             marginBottom: '24px',
-            textAlign: 'center',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             fontWeight: '600'
           }}>
-            {error}
+            <span>{error}</span>
+            <button type="button" onClick={() => setError('')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', lineHeight: '1' }}>&times;</button>
           </div>
         )}
 

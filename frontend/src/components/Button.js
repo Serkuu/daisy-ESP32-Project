@@ -22,6 +22,10 @@ function Button({ children, onClick, type = 'button', variant = 'primary', fullW
       backgroundColor: 'var(--color-canvas)',
       color: 'var(--color-ink)',
       border: '2px solid var(--color-ink)',
+    },
+    danger: {
+      backgroundColor: '#966995',
+      color: '#ffffff',
     }
   };
 

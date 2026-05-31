@@ -39,4 +39,7 @@ export class CreatePlantDto {
 
     @IsOptional()
     isToxicToPets: boolean;
+
+    @IsOptional()
+    lastWateredAt: Date | string | null;
 }

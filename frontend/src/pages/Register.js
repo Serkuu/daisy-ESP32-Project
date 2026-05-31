@@ -28,7 +28,7 @@ function Register() {
         throw new Error(errorMessage || 'Wystąpił błąd podczas rejestracji.');
       }
 
-      navigate('/login');
+      navigate('/login', { state: { successMessage: 'Konto zostało pomyślnie utworzone! Możesz się teraz zalogować.' } });
 
     } catch (err) {
       setError(err.message);
@@ -80,10 +80,13 @@ function Register() {
             padding: '16px',
             borderRadius: 'var(--rounded-md)',
             marginBottom: '24px',
-            textAlign: 'center',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             fontWeight: '600'
           }}>
-            {error}
+            <span>{error}</span>
+            <button type="button" onClick={() => setError('')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', lineHeight: '1' }}>&times;</button>
           </div>
         )}
 

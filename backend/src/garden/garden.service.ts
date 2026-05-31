@@ -20,6 +20,9 @@ export class GardenService {
     return this.prisma.garden.findMany({
       where: {
         userId
+      },
+      include: {
+        plants: true
       }
     })
   }
@@ -29,6 +32,9 @@ export class GardenService {
       where: {
         id,
         userId
+      },
+      include: {
+        plants: true
       }
     })
   }
@@ -63,6 +69,11 @@ export class GardenService {
     if (!garden) {
       throw new NotFoundException("Garden not found or access denied");
     }
+    await this.prisma.plant.updateMany({
+      where: { gardenId: id },
+      data: { gardenId: null }
+    });
+
     return this.prisma.garden.delete({
       where: {
         id

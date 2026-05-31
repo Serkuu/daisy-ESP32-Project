@@ -7,8 +7,8 @@ export class WsApiKeyGuard implements CanActivate {
   constructor(private configService: ConfigService) { }
 
   canActivate(context: ExecutionContext): boolean {
-    // W kontekście WebSockets, payload to dane przesłane przez klienta.
-    // Oczekujemy, że ESP32 prześle 'apiKey' wewnątrz obiektu z danymi.
+    // In the context of WebSockets, payload is the data sent by the client.
+    // We expect the ESP32 to send 'apiKey' inside the data object.
     const data = context.switchToWs().getData();
     const apiKey = data?.apiKey;
 

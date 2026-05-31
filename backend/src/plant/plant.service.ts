@@ -117,7 +117,7 @@ export class PlantService {
       }
       const genAI = new GoogleGenerativeAI(geminiKey);
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         generationConfig: {
           temperature: 0.1,
           responseMimeType: "application/json",
@@ -125,16 +125,16 @@ export class PlantService {
       });
 
       const prompt = `
-      Jesteś wybitnym botanikiem. Na podstawie zdjęcia rozpoznano następujący gatunek rośliny: ${speciesName}.
-      Zwróć TYLKO czysty obiekt JSON (bez znaczników \`\`\`json i markdown) z następującymi polami:
-      - plantName: (string) krótka polska nazwa potoczna
+      You are an expert botanist. Based on the photo, the following plant species has been identified: ${speciesName}.
+      Return ONLY a pure JSON object (without \`\`\`json tags and markdown) with the following fields:
+      - plantName: (string) short common Polish name
       - plantSpecies: (string) "${speciesName}"
-      - plantDescription: (string) krótki opis pielęgnacji (2-3 zdania)
-      - sunlightPreference: (string) enum [" jasne", "rozproszone światło", "półcień", "cień"]
-      - wateringIntervalSummer: (number) liczba dni między podlewaniem latem (np. 5)
-      - wateringIntervalWinter: (number) liczba dni między podlewaniem zimą (np. 14)
-      - optimalMoistureLevel: (number) optymalna wilgotność gleby w % dla sensora (np. 40)
-      - isToxicToPets: (boolean) wartość true lub false
+      - plantDescription: (string) short care description in Polish (2-3 sentences)
+      - sunlightPreference: (string) enum ["jasne", "rozproszone światło", "półcień", "cień"]
+      - wateringIntervalSummer: (number) number of days between watering in summer (e.g. 5)
+      - wateringIntervalWinter: (number) number of days between watering in winter (e.g. 14)
+      - optimalMoistureLevel: (number) optimal soil moisture level in % for the sensor (e.g. 40)
+      - isToxicToPets: (boolean) true or false
       `;
       const result = await model.generateContent(prompt);
       let text = result.response.text();
