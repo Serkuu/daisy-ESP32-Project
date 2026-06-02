@@ -1,23 +1,27 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
-import { HeadUnitService } from './head-unit.service';
+import { SensorService } from './sensor.service';
 import { TelemetryPingDto } from './dto/telemetry-ping.dto';
 import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { WsApiKeyGuard } from '../auth/guard/api-key/ws-api-key.guard';
 import { Server, WebSocket } from 'ws';
 
-@WebSocketGateway({ path: '/head-unit' })
-export class HeadUnitGateway {
+@WebSocketGateway({ path: '/sensor' })
+export class SensorGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly headUnitService: HeadUnitService) { }
+  constructor(private readonly sensorService: SensorService) { }
 
   @UseGuards(WsApiKeyGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   @SubscribeMessage('telemetry')
   async handleTelemetry(@MessageBody() data: TelemetryPingDto) {
-    await this.headUnitService.saveTelemetry(data);
+    await this.sensorService.saveTelemetry(data);
+    this.broadcastTelemetry(data);
+    return { event: 'telemetry_ack', status: 'success' };
+  }
 
+  broadcastTelemetry(data: TelemetryPingDto) {
     if (this.server && this.server.clients) {
       this.server.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
@@ -25,7 +29,5 @@ export class HeadUnitGateway {
         }
       });
     }
-
-    return { event: 'telemetry_ack', status: 'success' };
   }
 }

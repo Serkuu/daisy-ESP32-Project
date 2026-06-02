@@ -9,42 +9,67 @@ function GardenView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchGardenDetails = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
+  const [liveData, setLiveData] = useState({ temp: null, moist: null });
+
+  const fetchGardenDetails = React.useCallback(async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/garden/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('access_token');
         navigate('/login');
         return;
       }
 
+      if (!response.ok) {
+        throw new Error('Nie udało się pobrać szczegółów ogrodu.');
+      }
+
+      const data = await response.json();
+      setGarden(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchGardenDetails();
+
+    const ws = new WebSocket('ws://localhost:3000/head-unit');
+
+    ws.onopen = () => console.log('Połączono z serwerem WebSocket (HeadUnit)');
+
+    ws.onmessage = (event) => {
       try {
-        const response = await fetch(`http://localhost:3000/garden/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.status === 401) {
-          localStorage.removeItem('access_token');
-          navigate('/login');
-          return;
+        const message = JSON.parse(event.data);
+        if (message.event === 'telemetry_update' && message.data) {
+          setLiveData({
+            temp: message.data.tempLevel,
+            moist: message.data.moistLevel,
+            macAddress: message.data.macAddress
+          });
         }
-
-        if (!response.ok) {
-          throw new Error('Nie udało się pobrać szczegółów ogrodu.');
-        }
-
-        const data = await response.json();
-        setGarden(data);
       } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        console.error('Błąd parsowania WS', err);
       }
     };
 
-    fetchGardenDetails();
-  }, [id, navigate]);
+    return () => {
+      ws.close();
+    };
+  }, [fetchGardenDetails]);
 
   const handleDeleteGarden = async () => {
     if (!window.confirm('Czy na pewno chcesz usunąć ten ogród? Rośliny zostaną zachowane bez przypisanego miejsca.')) {
@@ -113,6 +138,53 @@ function GardenView() {
           <Button variant="secondary" onClick={() => navigate('/dashboard')}>Wróć</Button>
           <Button onClick={() => navigate('/add-plant')}>Dodaj roślinę</Button>
           <Button variant="danger" onClick={handleDeleteGarden}>Usuń ogród</Button>
+        </div>
+      </div>
+
+      <div style={{
+        backgroundColor: 'var(--color-canvas)',
+        padding: '24px',
+        borderRadius: 'var(--rounded-xl)',
+        marginBottom: '32px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div>
+          <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>Sprzęt i Sensoryka</h2>
+          {garden.headUnit ? (
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+              <div>
+                <p style={{ color: 'var(--color-primary-active)', fontWeight: '600' }}>
+                  Baza Główna (ESP32) sparowana: {garden.headUnit.macAddress}
+                </p>
+                <div style={{ display: 'flex', gap: '24px', marginTop: '16px' }}>
+                  <div style={{ padding: '16px', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', minWidth: '120px' }}>
+                    <span style={{ fontSize: '14px', color: 'var(--color-mute)', display: 'block', marginBottom: '4px' }}>Temperatura</span>
+                    <span style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-ink)' }}>
+                      {liveData.macAddress === garden.headUnit.macAddress && liveData.temp !== null ? `${liveData.temp.toFixed(1)}°C` : '--°C'}
+                    </span>
+                  </div>
+                  <div style={{ padding: '16px', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', minWidth: '120px' }}>
+                    <span style={{ fontSize: '14px', color: 'var(--color-mute)', display: 'block', marginBottom: '4px' }}>Wilgotność pow.</span>
+                    <span style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-ink)' }}>
+                      {liveData.macAddress === garden.headUnit.macAddress && liveData.moist !== null ? `${liveData.moist}%` : '--%'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: 'var(--rounded-pill)', backgroundColor: liveData.macAddress === garden.headUnit.macAddress ? 'var(--color-positive-deep)' : 'var(--color-mute)', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: liveData.macAddress === garden.headUnit.macAddress ? '#4ade80' : '#ccc', boxShadow: liveData.macAddress === garden.headUnit.macAddress ? '0 0 10px #4ade80' : 'none' }}></div>
+                {liveData.macAddress === garden.headUnit.macAddress ? 'LIVE' : 'Brak połączenia'}
+              </div>
+            </div>
+          ) : (
+            <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>
+              Brak przypisanej Bazy Głównej dla tego ogrodu. Skanuj Bluetooth na Dashboardzie, aby sparować urządzenie.
+            </p>
+          )}
         </div>
       </div>
 

@@ -2,15 +2,16 @@
 
 :root {
   /* Main colors */
-  --color-primary: #5bab5e;
+  --color-primary: #7FB77E;
   --color-on-primary: #0c0c0c;
-  --color-primary-active: #60bb63;
-  --color-primary-neutral: #81c883;
-  --color-primary-pale: #98e69a;
+  --color-primary-active: #87cc85;
+  --color-primary-neutral: #7FB77E;
+  --color-primary-pale: #9ccb9c;
+  --color-secondary: #F7C85C;
 
   /* Surface colors */
   --color-canvas: #ffffff;
-  --color-canvas-soft: #faf5fa;
+  --color-canvas-soft: #f8f6f2;
 
   /* Text colors */
   --color-ink: #0e0f0c;

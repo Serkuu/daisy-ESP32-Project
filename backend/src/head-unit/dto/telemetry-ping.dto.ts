@@ -1,4 +1,4 @@
-import { IsInt, IsString, IsNotEmpty, IsOptional } from "class-validator";
+import { IsInt, IsString, IsNotEmpty, IsOptional, IsNumber } from "class-validator";
 
 export class TelemetryPingDto {
     @IsString()
@@ -9,7 +9,7 @@ export class TelemetryPingDto {
     @IsNotEmpty()
     macAddress: string;
 
-    @IsInt()
+    @IsNumber()
     @IsNotEmpty()
     tempLevel: number;
 

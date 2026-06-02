@@ -1,16 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { SensorService } from './sensor.service';
 import { CreateSensorDto } from './dto/create-sensor.dto';
 import { UpdateSensorDto } from './dto/update-sensor.dto';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { JwtGuard } from '../auth/guard/jwt.guard';
-import { UseGuards } from '@nestjs/common';
 import { ApiKeyGuard } from '../auth/guard/api-key/api-key.guard';
 import { TelemetryPingDto } from './dto/telemetry-ping.dto';
+import { SensorGateway } from './sensor.gateway';
 
 @Controller('sensor')
 export class SensorController {
-  constructor(private readonly sensorService: SensorService) { }
+  constructor(
+    private readonly sensorService: SensorService,
+    private readonly sensorGateway: SensorGateway
+  ) { }
 
   @UseGuards(JwtGuard)
   @Post()
@@ -44,7 +47,9 @@ export class SensorController {
 
   @UseGuards(ApiKeyGuard)
   @Post('telemetry')
-  saveTelemetry(@Body() telemetryPingDto: TelemetryPingDto) {
-    return this.sensorService.saveTelemetry(telemetryPingDto);
+  async saveTelemetry(@Body() telemetryPingDto: TelemetryPingDto) {
+    const result = await this.sensorService.saveTelemetry(telemetryPingDto);
+    this.sensorGateway.broadcastTelemetry(telemetryPingDto);
+    return result;
   }
 }

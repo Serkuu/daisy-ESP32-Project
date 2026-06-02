@@ -35,6 +35,9 @@ export class PlantService {
     return this.prisma.plant.findMany({
       where: {
         userId
+      },
+      include: {
+        sensor: true
       }
     })
   }
@@ -44,6 +47,9 @@ export class PlantService {
       where: {
         id,
         userId
+      },
+      include: {
+        sensor: true
       }
     });
   }

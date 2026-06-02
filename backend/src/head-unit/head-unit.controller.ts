@@ -5,6 +5,8 @@ import { UpdateHeadUnitDto } from './dto/update-head-unit.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { ApiKeyGuard } from '../auth/guard/api-key/api-key.guard';
+import { TelemetryPingDto } from './dto/telemetry-ping.dto';
 
 @Controller('head-unit')
 export class HeadUnitController {
@@ -38,6 +40,12 @@ export class HeadUnitController {
   @Delete(':id')
   remove(@Param('id') id: string, @GetUser('userId') userId: number) {
     return this.headUnitService.remove(+id, userId);
+  }
+
+  @UseGuards(ApiKeyGuard)
+  @Post('telemetry')
+  saveTelemetry(@Body() telemetryPingDto: TelemetryPingDto) {
+    return this.headUnitService.saveTelemetry(telemetryPingDto);
   }
 
 }

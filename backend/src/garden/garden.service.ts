@@ -22,7 +22,8 @@ export class GardenService {
         userId
       },
       include: {
-        plants: true
+        plants: true,
+        headUnit: true
       }
     })
   }
@@ -34,7 +35,8 @@ export class GardenService {
         userId
       },
       include: {
-        plants: true
+        plants: true,
+        headUnit: true
       }
     })
   }

@@ -9,44 +9,68 @@ function PlantView() {
   const [plant, setPlant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [liveData, setLiveData] = useState({ moist: null, macAddress: null });
   const dateInputRef = useRef(null);
 
-  useEffect(() => {
-    const fetchPlantDetails = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
+  const fetchPlantDetails = React.useCallback(async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/plant/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('access_token');
         navigate('/login');
         return;
       }
 
+      if (!response.ok) {
+        throw new Error('Nie udało się pobrać szczegółów rośliny.');
+      }
+
+      const data = await response.json();
+      setPlant(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchPlantDetails();
+
+    const ws = new WebSocket('ws://localhost:3000/sensor');
+
+    ws.onopen = () => console.log('Połączono z serwerem WebSocket (MoistureSensor)');
+
+    ws.onmessage = (event) => {
       try {
-        const response = await fetch(`http://localhost:3000/plant/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.status === 401) {
-          localStorage.removeItem('access_token');
-          navigate('/login');
-          return;
+        const message = JSON.parse(event.data);
+        if (message.event === 'telemetry_update' && message.data) {
+          setLiveData({
+            moist: message.data.moistLevel,
+            macAddress: message.data.macAddress
+          });
         }
-
-        if (!response.ok) {
-          throw new Error('Nie udało się pobrać szczegółów rośliny.');
-        }
-
-        const data = await response.json();
-        setPlant(data);
       } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        console.error('Błąd parsowania WS', err);
       }
     };
 
-    fetchPlantDetails();
-  }, [id, navigate]);
+    return () => {
+      ws.close();
+    };
+  }, [fetchPlantDetails]);
 
   const handleDeletePlant = async () => {
     if (!window.confirm('Czy na pewno chcesz usunąć tę roślinę?')) {
@@ -245,9 +269,9 @@ function PlantView() {
                     onClick={() => handleUpdateWatering(null)}
                     style={{
                       width: '64px', height: '64px', borderRadius: '50%', border: 'none',
-                      backgroundColor: '#966995', color: '#fff', fontSize: '24px',
+                      backgroundColor: 'var(--color-secondary)', color: 'var(--color-on-primary)', fontSize: '24px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      cursor: 'pointer', boxShadow: '0 4px 10px rgba(150, 105, 149, 0.3)',
+                      cursor: 'pointer', boxShadow: '0 4px 10px rgba(247, 200, 92, 0.3)',
                       transition: 'transform 0.1s'
                     }}
                     onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
@@ -288,6 +312,46 @@ function PlantView() {
               <span style={{ fontWeight: 'bold' }}>{calculateNextWatering()}</span>
             </div>
           </div>
+        </div>
+      </div>
+      <div style={{
+        backgroundColor: 'var(--color-canvas)',
+        padding: '24px',
+        borderRadius: 'var(--rounded-xl)',
+        marginBottom: '32px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div>
+          <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>Sprzęt i Sensoryka</h2>
+          {plant.sensor ? (
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+              <div>
+                <p style={{ color: 'var(--color-primary-active)', fontWeight: '600' }}>
+                  Czujnik Gleby (MoistureSensor) sparowany: {plant.sensor.macAddress}
+                </p>
+                <div style={{ display: 'flex', gap: '24px', marginTop: '16px' }}>
+                  <div style={{ padding: '16px', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', minWidth: '120px' }}>
+                    <span style={{ fontSize: '14px', color: 'var(--color-mute)', display: 'block', marginBottom: '4px' }}>Wilgotność gleby</span>
+                    <span style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-ink)' }}>
+                      {liveData.macAddress === plant.sensor.macAddress && liveData.moist !== null ? `${liveData.moist}%` : '--%'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: 'var(--rounded-pill)', backgroundColor: liveData.macAddress === plant.sensor.macAddress ? 'var(--color-positive-deep)' : 'var(--color-mute)', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: liveData.macAddress === plant.sensor.macAddress ? '#4ade80' : '#ccc', boxShadow: liveData.macAddress === plant.sensor.macAddress ? '0 0 10px #4ade80' : 'none' }}></div>
+                {liveData.macAddress === plant.sensor.macAddress ? 'LIVE' : 'Brak połączenia'}
+              </div>
+            </div>
+          ) : (
+            <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>
+              Brak przypisanego Czujnika Gleby dla tej rośliny. Skanuj Bluetooth na Dashboardzie, aby sparować urządzenie.
+            </p>
+          )}
         </div>
       </div>
     </div>

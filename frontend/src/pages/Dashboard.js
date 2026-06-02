@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/Button';
+import DeviceAssignModal from '../components/DeviceAssignModal';
 
 function Dashboard() {
   const [gardens, setGardens] = useState([]);
@@ -9,6 +10,10 @@ function Dashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(location.state?.successMessage || '');
   const navigate = useNavigate();
+
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [scannedDeviceType, setScannedDeviceType] = useState('');
+  const [scannedMacAddress, setScannedMacAddress] = useState('');
 
   useEffect(() => {
     const fetchGardens = async () => {
@@ -50,6 +55,32 @@ function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     navigate('/login');
+  };
+
+  const scanBluetoothDevice = async (type) => {
+    try {
+      if (!navigator.bluetooth) {
+        throw new Error("Twoja przeglądarka nie obsługuje Web Bluetooth API. Otwórz aplikację w Google Chrome na komputerze/Androidzie.");
+      }
+
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['battery_service']
+      });
+
+      //UWAGA MOCK PAMIETAJ
+      const mockedMac = device.id.substring(0, 17) || "00:1B:44:11:3A:B7";
+
+      setScannedDeviceType(type);
+      setScannedMacAddress(mockedMac);
+      setAssignModalOpen(true);
+    } catch (err) {
+      console.log('Bluetooth error: ', err);
+      if (err.name === 'NotFoundError') {
+      } else {
+        setError('Błąd Bluetooth: ' + err.message);
+      }
+    }
   };
 
   return (
@@ -137,6 +168,31 @@ function Dashboard() {
           ))}
         </div>
       )}
+
+      <div style={{ marginTop: '64px', borderTop: '1px solid #e2e8f0', paddingTop: '32px' }}>
+        <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>Twoje Urządzenia</h2>
+        <p style={{ color: 'var(--color-mute)', fontSize: '16px', marginBottom: '24px' }}>
+          Skanuj w poszukiwaniu urządzeń.
+        </p>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <Button onClick={() => scanBluetoothDevice('headunit')} style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
+            <span style={{ fontSize: '20px', marginRight: '8px' }}></span> Szukaj daisyHeadUnit
+          </Button>
+          <Button onClick={() => scanBluetoothDevice('sensor')} style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
+            <span style={{ fontSize: '20px', marginRight: '8px' }}></span> Szukaj daisySensor
+          </Button>
+        </div>
+      </div>
+
+      <DeviceAssignModal
+        isOpen={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        deviceType={scannedDeviceType}
+        deviceMac={scannedMacAddress}
+        onSuccess={() => {
+          setSuccess('Udało się sparować urządzenie po Bluetooth!');
+        }}
+      />
     </div>
   );
 }

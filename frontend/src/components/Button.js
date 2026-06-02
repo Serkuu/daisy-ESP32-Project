@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Button({ children, onClick, type = 'button', variant = 'primary', fullWidth = false }) {
+function Button({ children, onClick, type = 'button', variant = 'primary', fullWidth = false, style = {} }) {
   const baseStyle = {
     padding: '16px 32px',
     borderRadius: 'var(--rounded-xl)',
@@ -24,8 +24,8 @@ function Button({ children, onClick, type = 'button', variant = 'primary', fullW
       border: '2px solid var(--color-ink)',
     },
     danger: {
-      backgroundColor: '#966995',
-      color: '#ffffff',
+      backgroundColor: 'var(--color-secondary)',
+      color: 'var(--color-on-primary)',
     }
   };
 
@@ -33,7 +33,7 @@ function Button({ children, onClick, type = 'button', variant = 'primary', fullW
     <button 
       type={type} 
       onClick={onClick} 
-      style={{ ...baseStyle, ...variants[variant] }}
+      style={{ ...baseStyle, ...variants[variant], ...style }}
       onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
       onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
     >
