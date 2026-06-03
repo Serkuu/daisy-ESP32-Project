@@ -21,7 +21,7 @@ function PlantView() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/plant/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/plant/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -49,7 +49,7 @@ function PlantView() {
   useEffect(() => {
     fetchPlantDetails();
 
-    const ws = new WebSocket('ws://localhost:3000/sensor');
+    const ws = new WebSocket((process.env.REACT_APP_WS_URL || 'ws://localhost:3000') + '/sensor');
 
     ws.onopen = () => console.log('Połączono z serwerem WebSocket (MoistureSensor)');
 
@@ -58,7 +58,7 @@ function PlantView() {
         const message = JSON.parse(event.data);
         if (message.event === 'telemetry_update' && message.data) {
           setLiveData({
-            moist: message.data.moistLevel,
+            moist: message.data.moistureLevel,
             macAddress: message.data.macAddress
           });
         }
@@ -79,7 +79,7 @@ function PlantView() {
 
     const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`http://localhost:3000/plant/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/plant/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -99,7 +99,7 @@ function PlantView() {
   const handleUpdateWatering = async (newDate) => {
     const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`http://localhost:3000/plant/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/plant/${id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -349,7 +349,7 @@ function PlantView() {
             </div>
           ) : (
             <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>
-              Brak przypisanego Czujnika Gleby dla tej rośliny. Skanuj Bluetooth na Dashboardzie, aby sparować urządzenie.
+              Brak sparowanego czujnika daisySensor dla tej rośliny
             </p>
           )}
         </div>

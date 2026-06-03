@@ -19,7 +19,7 @@ function GardenView() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/garden/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/garden/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -47,7 +47,7 @@ function GardenView() {
   useEffect(() => {
     fetchGardenDetails();
 
-    const ws = new WebSocket('ws://localhost:3000/head-unit');
+    const ws = new WebSocket((process.env.REACT_APP_WS_URL || 'ws://localhost:3000') + '/head-unit');
 
     ws.onopen = () => console.log('Połączono z serwerem WebSocket (HeadUnit)');
 
@@ -78,7 +78,7 @@ function GardenView() {
 
     const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`http://localhost:3000/garden/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/garden/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -182,7 +182,7 @@ function GardenView() {
             </div>
           ) : (
             <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>
-              Brak przypisanej Bazy Głównej dla tego ogrodu. Skanuj Bluetooth na Dashboardzie, aby sparować urządzenie.
+              Brak sparowanego daisyHeadUnit dla tego ogrodu
             </p>
           )}
         </div>
@@ -198,7 +198,7 @@ function GardenView() {
         }}>
           <h2 style={{ fontSize: '28px', marginBottom: '16px' }}>Twój ogród jest pusty</h2>
           <p style={{ color: 'var(--color-mute)', marginBottom: '32px', fontSize: '16px' }}>
-            Dodaj swoją pierwszą roślinę i zacznij ją monitorować.
+            Dodaj swoją pierwszą roślinę
           </p>
           <Button onClick={() => navigate('/add-plant')}>Zeskanuj roślinę</Button>
         </div>

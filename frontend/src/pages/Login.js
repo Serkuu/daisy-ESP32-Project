@@ -15,7 +15,7 @@ function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/auth/login', {
+      const response = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -54,7 +54,7 @@ function Login() {
       }}>
         <h1 style={{ fontSize: '40px', marginBottom: '8px', textAlign: 'center' }}>Witaj z powrotem</h1>
         <p style={{ color: 'var(--color-mute)', textAlign: 'center', marginBottom: '40px', fontSize: '16px' }}>
-          Zaloguj się, by zadbać o swoje rośliny.
+          Zaloguj się
         </p>
 
         {success && (

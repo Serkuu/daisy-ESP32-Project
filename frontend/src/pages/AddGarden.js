@@ -12,15 +12,15 @@ function AddGarden() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     const token = localStorage.getItem('access_token');
 
     try {
-      const response = await fetch('http://localhost:3000/garden', {
+      const response = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/garden', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ gardenName })
       });
@@ -66,11 +66,11 @@ function AddGarden() {
       <form onSubmit={handleSaveGarden} style={{ backgroundColor: 'var(--color-canvas)', padding: '32px', borderRadius: 'var(--rounded-xl)' }}>
         <div style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Nazwa Ogrodu</label>
-          <input 
-            type="text" 
-            value={gardenName} 
+          <input
+            type="text"
+            value={gardenName}
             onChange={e => setGardenName(e.target.value)}
-            placeholder="np. Salon, Balkon, Kuchnia..."
+            placeholder="Nazwa Twojego ogrodu"
             required
             minLength={3}
             maxLength={30}

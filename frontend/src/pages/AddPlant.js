@@ -31,7 +31,7 @@ function AddPlant() {
       if (!token) return navigate('/login');
 
       try {
-        const res = await fetch('http://localhost:3000/garden', {
+        const res = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/garden', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -67,7 +67,7 @@ function AddPlant() {
     const token = localStorage.getItem('access_token');
 
     try {
-      const response = await fetch('http://localhost:3000/plant/identify', {
+      const response = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/plant/identify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ function AddPlant() {
     const token = localStorage.getItem('access_token');
 
     try {
-      const response = await fetch('http://localhost:3000/plant', {
+      const response = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/plant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

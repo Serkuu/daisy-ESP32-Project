@@ -15,7 +15,7 @@ function Register() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/auth/register', {
+      const response = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname, email, password })
@@ -92,11 +92,11 @@ function Register() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={labelStyle}>Twoja nazwa (Nickname)</label>
+            <label style={labelStyle}>Nickname</label>
             <input
               type="text"
               value={nickname} onChange={e => setNickname(e.target.value)}
-              placeholder="np. ZielonyKciuk" style={inputStyle} required minLength={3} maxLength={20}
+              placeholder="Nazwa Twojego konta" style={inputStyle} required minLength={3} maxLength={20}
             />
           </div>
 

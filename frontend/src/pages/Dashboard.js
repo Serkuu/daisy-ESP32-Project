@@ -14,6 +14,7 @@ function Dashboard() {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [scannedDeviceType, setScannedDeviceType] = useState('');
   const [scannedMacAddress, setScannedMacAddress] = useState('');
+  const [gattServer, setGattServer] = useState(null);
 
   useEffect(() => {
     const fetchGardens = async () => {
@@ -24,7 +25,7 @@ function Dashboard() {
       }
 
       try {
-        const response = await fetch('http://localhost:3000/garden', {
+        const response = await fetch((process.env.REACT_APP_API_URL || 'http://localhost:3000') + '/garden', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -63,21 +64,34 @@ function Dashboard() {
         throw new Error("Twoja przeglądarka nie obsługuje Web Bluetooth API. Otwórz aplikację w Google Chrome na komputerze/Androidzie.");
       }
 
+      const WIFI_PROV_SERVICE = '12345678-1234-5678-1234-56789abcdef0';
+      const MAC_CHAR = '12345678-1234-5678-1234-56789abcdef2';
+
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ['battery_service']
+        optionalServices: ['battery_service', WIFI_PROV_SERVICE]
       });
 
-      //UWAGA MOCK PAMIETAJ
-      const mockedMac = device.id.substring(0, 17) || "00:1B:44:11:3A:B7";
+      const server = await device.gatt.connect();
 
+      let realMac = "";
+      try {
+        const provService = await server.getPrimaryService(WIFI_PROV_SERVICE);
+        const macChar = await provService.getCharacteristic(MAC_CHAR);
+        const value = await macChar.readValue();
+        realMac = new TextDecoder('utf-8').decode(value);
+      } catch (err) {
+        console.warn("Nie udało się odczytać adresu MAC z customowej charakterystyki", err);
+        realMac = device.id.substring(0, 17) || "00:1B:44:11:3A:B7";
+      }
+
+      setGattServer(server);
       setScannedDeviceType(type);
-      setScannedMacAddress(mockedMac);
+      setScannedMacAddress(realMac);
       setAssignModalOpen(true);
     } catch (err) {
       console.log('Bluetooth error: ', err);
-      if (err.name === 'NotFoundError') {
-      } else {
+      if (err.name !== 'NotFoundError') {
         setError('Błąd Bluetooth: ' + err.message);
       }
     }
@@ -88,7 +102,7 @@ function Dashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <div>
           <h1 style={{ fontSize: '48px', marginBottom: '8px' }}>Twoje Ogrody</h1>
-          <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Zarządzaj swoimi roślinami i urządzeniami.</p>
+          <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Zarządzaj swoimi roślinami i urządzeniami</p>
         </div>
         <div style={{ display: 'flex', gap: '16px' }}>
           <Button onClick={() => navigate('/add-garden')}>Nowy ogród</Button>
@@ -141,9 +155,9 @@ function Dashboard() {
           textAlign: 'center',
           boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
         }}>
-          <h2 style={{ fontSize: '28px', marginBottom: '16px' }}>Nie masz jeszcze żadnego ogrodu!</h2>
+          <h2 style={{ fontSize: '28px', marginBottom: '16px' }}>Nie masz jeszcze żadnego ogrodu</h2>
           <p style={{ color: 'var(--color-mute)', marginBottom: '32px', fontSize: '18px' }}>
-            Dodaj swój pierwszy ogród i tchnij życie w to miejsce.
+            Dodaj swój pierwszy ogród
           </p>
           <Button onClick={() => navigate('/add-garden')}>Stwórz pierwszy ogród</Button>
         </div>
@@ -172,7 +186,7 @@ function Dashboard() {
       <div style={{ marginTop: '64px', borderTop: '1px solid #e2e8f0', paddingTop: '32px' }}>
         <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>Twoje Urządzenia</h2>
         <p style={{ color: 'var(--color-mute)', fontSize: '16px', marginBottom: '24px' }}>
-          Skanuj w poszukiwaniu urządzeń.
+          Skanuj w poszukiwaniu urządzeń
         </p>
         <div style={{ display: 'flex', gap: '16px' }}>
           <Button onClick={() => scanBluetoothDevice('headunit')} style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
@@ -186,11 +200,16 @@ function Dashboard() {
 
       <DeviceAssignModal
         isOpen={assignModalOpen}
-        onClose={() => setAssignModalOpen(false)}
+        onClose={() => {
+          setAssignModalOpen(false);
+          if (gattServer) gattServer.disconnect();
+          setGattServer(null);
+        }}
         deviceType={scannedDeviceType}
         deviceMac={scannedMacAddress}
+        gattServer={gattServer}
         onSuccess={() => {
-          setSuccess('Udało się sparować urządzenie po Bluetooth!');
+          setSuccess('Udało się sparować i skonfigurować urządzenie!');
         }}
       />
     </div>
