@@ -1,0 +1,59 @@
+.watering-anim-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.watering-can {
+  position: absolute;
+  top: 15%;
+  left: -200px;
+  width: 180px;
+  height: 150px;
+  transform-origin: 30% 70%;
+  will-change: transform;
+}
+
+.watering-can.animate {
+  animation: waterAnimation 2.5s cubic-bezier(0.42, 0, 0.58, 1) forwards;
+}
+
+@keyframes waterAnimation {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  20% { transform: translate3d(calc(var(--container-w, 1000px) * 0.25), -20px, 0) rotate(0deg); }
+  30% { transform: translate3d(calc(var(--container-w, 1000px) * 0.35), -20px, 0) rotate(40deg); }
+  70% { transform: translate3d(calc(var(--container-w, 1000px) * 0.65), -20px, 0) rotate(40deg); }
+  80% { transform: translate3d(calc(var(--container-w, 1000px) * 0.75), -20px, 0) rotate(0deg); }
+  100% { transform: translate3d(calc(var(--container-w, 1000px) + 200px), 0, 0) rotate(0deg); }
+}
+
+.water-drop {
+  position: absolute;
+  width: 10px;
+  height: 14px;
+  background-color: rgba(173, 216, 230, 0.8);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.water-drop.animate {
+  animation: dropFall 0.7s cubic-bezier(0.3, 0, 0.8, 1) forwards;
+}
+
+@keyframes dropFall {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--drop-dx, 0px), var(--drop-dy, 150px), 0) scale(1.2);
+    opacity: 0;
+  }
+}

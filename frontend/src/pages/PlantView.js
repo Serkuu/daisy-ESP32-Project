@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
+import WateringAnimation from '../components/WateringAnimation';
 import { WateringCanIcon, CalendarIcon, CrossIcon } from '../components/Icons';
 
 function PlantView() {
@@ -12,6 +13,7 @@ function PlantView() {
   const [error, setError] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
+  const [isWateringAnim, setIsWateringAnim] = useState(false);
 
   const [liveData, setLiveData] = useState({ moist: null, macAddress: null });
   const dateInputRef = useRef(null);
@@ -100,7 +102,12 @@ function PlantView() {
     }
   };
 
-  const handleUpdateWatering = async (newDate) => {
+  const handleUpdateWatering = async (newDate, isFromButton = false) => {
+    if (isFromButton) {
+      setIsWateringAnim(true);
+      setTimeout(() => setIsWateringAnim(false), 2600);
+    }
+
     const token = localStorage.getItem('access_token');
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/plant/${id}`, {
@@ -192,8 +199,11 @@ function PlantView() {
         boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
         display: 'flex',
         flexDirection: 'column',
-        marginBottom: '40px'
+        marginBottom: '40px',
+        position: 'relative'
       }}>
+
+        <WateringAnimation isWatering={isWateringAnim} />
         {plant.imageUrl ? (
           <img src={plant.imageUrl} alt={plant.plantName} style={{ width: '100%', height: '400px', objectFit: 'cover' }} />
         ) : (
@@ -220,7 +230,7 @@ function PlantView() {
             <h3 style={{ fontSize: '18px', marginBottom: '16px', fontWeight: '600' }}>Podlewanie</h3>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               <button
-                onClick={() => handleUpdateWatering(new Date())}
+                onClick={() => handleUpdateWatering(new Date(), true)}
                 style={{
                   width: '80px', height: '80px', borderRadius: '50%', border: 'none',
                   backgroundColor: '#3b82f6', color: '#fff', fontSize: '32px',
