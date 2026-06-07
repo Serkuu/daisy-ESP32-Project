@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import { Star, Thermometer, Droplets, ArrowRight, Sprout, Plus, Wifi, WifiOff, Trees } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 function Dashboard() {
   const [gardens, setGardens] = useState([]);
@@ -11,9 +10,15 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [liveData, setLiveData] = useState({ temp: null, moist: null, macAddress: null });
-  const [telemetryHistory, setTelemetryHistory] = useState([]);
   const navigate = useNavigate();
 
   const fetchGardens = useCallback(async () => {
@@ -68,15 +73,6 @@ function Dashboard() {
             moist: message.data.moistLevel,
             macAddress: message.data.macAddress
           });
-
-          setTelemetryHistory(prev => {
-            const newPoint = {
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-              temp: message.data.tempLevel,
-              moist: message.data.moistLevel
-            };
-            return [...prev, newPoint].slice(-15);
-          });
         }
       } catch (err) { }
     };
@@ -121,18 +117,33 @@ function Dashboard() {
     return <p style={{ color: 'var(--color-mute)', fontSize: '18px' }}>Wczytywanie...</p>;
   }
 
+  const renderSwitch = () => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <span style={{ fontSize: '14px', color: !showFavoriteOnly ? 'var(--color-primary-active)' : 'var(--color-mute)', fontWeight: !showFavoriteOnly ? 'bold' : 'normal' }}>Wszystkie</span>
+      <div
+        onClick={() => setShowFavoriteOnly(!showFavoriteOnly)}
+        style={{ width: '48px', height: '24px', backgroundColor: showFavoriteOnly ? 'var(--color-primary-active)' : '#cbd5e1', borderRadius: '12px', position: 'relative', cursor: 'pointer', transition: 'background-color 0.2s' }}
+      >
+        <div style={{ width: '20px', height: '20px', backgroundColor: '#fff', borderRadius: '50%', position: 'absolute', top: '2px', left: showFavoriteOnly ? '26px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}></div>
+      </div>
+      <span style={{ fontSize: '14px', color: showFavoriteOnly ? 'var(--color-primary-active)' : 'var(--color-mute)', fontWeight: showFavoriteOnly ? 'bold' : 'normal' }}>Ulubiony</span>
+    </div>
+  );
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
-          <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Twoje ogrody</h1>
-          <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Monitoruj swoje rośliny</p>
+      <div className="mobile-wrap mobile-center" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', gap: '16px' }}>
+        <div className="mobile-center">
+          <h1 style={{ fontSize: 'var(--font-size-h1, 32px)', marginBottom: '8px' }}>Twoje ogrody</h1>
+          <p className="hide-on-mobile" style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Monitoruj swoje rośliny</p>
         </div>
-        <Button onClick={() => navigate('/add-garden')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={18} />
-          Dodaj Ogród
-        </Button>
+        {!showFavoriteOnly && (
+          <Button onClick={() => navigate('/add-garden')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Plus size={18} />
+            Dodaj Ogród
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -142,73 +153,54 @@ function Dashboard() {
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-        <span style={{ fontSize: '14px', color: !showFavoriteOnly ? 'var(--color-primary-active)' : 'var(--color-mute)', fontWeight: !showFavoriteOnly ? 'bold' : 'normal' }}>Wszystkie</span>
-        <div
-          onClick={() => setShowFavoriteOnly(!showFavoriteOnly)}
-          style={{ width: '48px', height: '24px', backgroundColor: showFavoriteOnly ? 'var(--color-primary-active)' : '#cbd5e1', borderRadius: '12px', position: 'relative', cursor: 'pointer', transition: 'background-color 0.2s' }}
-        >
-          <div style={{ width: '20px', height: '20px', backgroundColor: '#fff', borderRadius: '50%', position: 'absolute', top: '2px', left: showFavoriteOnly ? '26px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}></div>
-        </div>
-        <span style={{ fontSize: '14px', color: showFavoriteOnly ? 'var(--color-primary-active)' : 'var(--color-mute)', fontWeight: showFavoriteOnly ? 'bold' : 'normal' }}>Ulubiony</span>
-      </div>
+
 
       {showFavoriteOnly ? (
         favoriteGarden ? (
           <div style={{ marginBottom: '64px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Star size={28} color="var(--color-secondary)" fill="var(--color-secondary)" />
-                <h2 style={{ fontSize: '28px' }}>{favoriteGarden.gardenName}</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: 'var(--rounded-pill)', backgroundColor: isLive ? 'var(--color-primary-pale)' : 'var(--color-canvas)', color: isLive ? 'var(--color-positive-deep)' : 'var(--color-mute)', fontSize: '12px', fontWeight: 'bold', marginLeft: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'center', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Star size={28} color="var(--color-secondary)" fill="var(--color-secondary)" />
+                  <h2 style={{ fontSize: '28px', margin: 0 }}>{favoriteGarden.gardenName}</h2>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: 'var(--rounded-pill)', backgroundColor: isLive ? 'var(--color-primary-pale)' : 'var(--color-canvas)', color: isLive ? 'var(--color-positive-deep)' : 'var(--color-mute)', fontSize: '12px', fontWeight: 'bold', marginLeft: isMobile ? '0' : '16px' }}>
                   {isLive ? <Wifi size={14} /> : <WifiOff size={14} />}
                   {isLive ? 'LIVE' : 'Brak połączenia'}
                 </div>
               </div>
-              <Button variant="secondary" onClick={() => navigate(`/add-plant`)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--color-canvas)', border: '1px solid rgba(0,0,0,0.1)' }}>
-                <Plus size={16} /> Dodaj roślinę
-              </Button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
+                {renderSwitch()}
+                <Button variant="secondary" onClick={() => navigate(`/add-plant`)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--color-canvas)', border: '1px solid rgba(0,0,0,0.1)' }}>
+                  <Plus size={16} /> Dodaj roślinę
+                </Button>
+              </div>
             </div>
+
+
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginBottom: '24px' }}>
               <div className="glass-card" style={{ padding: '32px', display: 'flex', alignItems: 'center', gap: '24px' }}>
                 <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: '#ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c2410c' }}>
                   <Thermometer size={32} />
                 </div>
-                  <div>
-                    <p style={{ color: 'var(--color-mute)', fontSize: '14px', marginBottom: '4px' }}>Temperatura</p>
-                    <p style={{ fontSize: '36px', fontWeight: '800' }}>{displayTemp !== null ? `${displayTemp.toFixed(1)}°C` : '--°C'}</p>
-                  </div>
+                <div>
+                  <p style={{ color: 'var(--color-mute)', fontSize: '14px', marginBottom: '4px' }}>Temperatura</p>
+                  <p style={{ fontSize: '36px', fontWeight: '800' }}>{displayTemp !== null ? `${displayTemp.toFixed(1)}°C` : '--°C'}</p>
+                </div>
               </div>
 
               <div className="glass-card" style={{ padding: '32px', display: 'flex', alignItems: 'center', gap: '24px' }}>
                 <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0369a1' }}>
                   <Droplets size={32} />
                 </div>
-                  <div>
-                    <p style={{ color: 'var(--color-mute)', fontSize: '14px', marginBottom: '4px' }}>Wilgotność pow.</p>
-                    <p style={{ fontSize: '36px', fontWeight: '800' }}>{displayMoist !== null ? `${displayMoist}%` : '--%'}</p>
-                  </div>
+                <div>
+                  <p style={{ color: 'var(--color-mute)', fontSize: '14px', marginBottom: '4px' }}>Wilgotność powietrza</p>
+                  <p style={{ fontSize: '36px', fontWeight: '800' }}>{displayMoist !== null ? `${displayMoist}%` : '--%'}</p>
+                </div>
               </div>
             </div>
 
-            {telemetryHistory.length > 1 && (
-              <div className="glass-card" style={{ padding: '32px', marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '20px', marginBottom: '24px' }}>Historia odczytów czujnika:</h3>
-                <div style={{ width: '100%', height: '300px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={telemetryHistory} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
-                      <XAxis dataKey="time" stroke="var(--color-mute)" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="var(--color-mute)" fontSize={12} tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
-                      <Line type="monotone" dataKey="temp" name="Temperatura (°C)" stroke="#f97316" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
-                      <Line type="monotone" dataKey="moist" name="Wilgotność (%)" stroke="#0ea5e9" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
 
             {favoriteGarden.plants && favoriteGarden.plants.length > 0 && (
               <div>
@@ -232,7 +224,10 @@ function Dashboard() {
             )}
           </div>
         ) : (
-          <div className="glass-card" style={{ padding: '64px', textAlign: 'center', marginBottom: '48px' }}>
+          <div className="glass-card" style={{ padding: '64px', textAlign: 'center', marginBottom: '48px', position: 'relative' }}>
+            <div className="mobile-center" style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
+              {renderSwitch()}
+            </div>
             <div style={{ width: '80px', height: '80px', borderRadius: '24px', backgroundColor: 'var(--color-primary-pale)', color: 'var(--color-positive-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <Star size={40} />
             </div>
@@ -245,7 +240,10 @@ function Dashboard() {
       ) : (
         gardens.length > 0 && (
           <div>
-            <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>Wszystkie Ogrody</h2>
+            <div className="mobile-wrap mobile-center" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
+              <h2 style={{ fontSize: '24px', margin: 0 }}>Wszystkie Ogrody</h2>
+              {renderSwitch()}
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
               {gardens.map(garden => (
                 <div key={garden.id} style={{ position: 'relative' }}>

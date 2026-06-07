@@ -36,8 +36,9 @@ function AddPlant() {
         });
         if (res.ok) {
           const data = await res.json();
-          setGardens(data);
-          if (data.length > 0) setSelectedGarden(data[0].id);
+          const sortedData = data.sort((a, b) => a.id - b.id);
+          setGardens(sortedData);
+          if (sortedData.length > 0) setSelectedGarden(sortedData[0].id);
         }
       } catch (e) {
         console.error("Failed to fetch gardens", e);
@@ -137,8 +138,8 @@ function AddPlant() {
 
   return (
     <div style={{ padding: '48px', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '36px' }}>Skanuj Roślinę</h1>
+      <div className="mobile-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', gap: '16px' }}>
+        <h1 style={{ fontSize: '36px', textAlign: 'center' }}>Skanuj Roślinę</h1>
         <Button variant="secondary" onClick={() => navigate('/dashboard')}>Wróć</Button>
       </div>
 
@@ -161,13 +162,36 @@ function AddPlant() {
 
       <div style={{ backgroundColor: 'var(--color-canvas)', padding: '32px', borderRadius: 'var(--rounded-xl)', marginBottom: '32px' }}>
         <h2 style={{ fontSize: '20px', marginBottom: '16px' }}>Krok 1: Zrób zdjęcie rośliny</h2>
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFileChange}
-          style={{ marginBottom: '16px' }}
-        />
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 24px',
+            border: '2px dashed var(--color-primary-active)',
+            borderRadius: 'var(--rounded-md)',
+            cursor: 'pointer',
+            backgroundColor: 'var(--color-canvas-soft)',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={e => e.currentTarget.style.backgroundColor = '#e8f5e9'}
+          onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--color-canvas-soft)'}>
+            <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--color-primary-active)', marginBottom: '8px', textAlign: 'center' }}>
+              Kliknij, aby zrobić lub wybrać zdjęcie
+            </span>
+            <span style={{ fontSize: '14px', color: 'var(--color-mute)' }}>
+              {file ? file.name : "Nie wybrano pliku"}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+          </label>
+        </div>
 
         {base64Image && (
           <div style={{ marginTop: '16px', marginBottom: '16px' }}>
@@ -184,7 +208,7 @@ function AddPlant() {
         <form onSubmit={handleSavePlant} style={{ backgroundColor: 'var(--color-canvas)', padding: '32px', borderRadius: 'var(--rounded-xl)' }}>
           <h2 style={{ fontSize: '20px', marginBottom: '24px' }}>Krok 2: Zweryfikuj i Zapisz</h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div className="mobile-grid-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Polska Nazwa</label>
               <input
@@ -216,7 +240,7 @@ function AddPlant() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+          <div className="mobile-grid-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>Podlewanie (Lato)</label>
               <input
@@ -254,7 +278,7 @@ function AddPlant() {
               required
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-mute)' }}
             >
-              <option value="">Wybierz ogród...</option>
+              <option value="" disabled>Wybierz ogród...</option>
               {gardens.map(g => <option key={g.id} value={g.id}>{g.gardenName || g.name}</option>)}
             </select>
           </div>

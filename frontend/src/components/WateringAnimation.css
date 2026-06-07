@@ -19,6 +19,14 @@
   will-change: transform;
 }
 
+@media (max-width: 768px) {
+  .watering-can {
+    left: -100px;
+    width: 90px;
+    height: 75px;
+  }
+}
+
 .watering-can.animate {
   animation: waterAnimation 2.5s cubic-bezier(0.42, 0, 0.58, 1) forwards;
 }

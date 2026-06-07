@@ -116,7 +116,7 @@ function ChartsHistory() {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Wykresy i historia</h1>
+        <h1 style={{ fontSize: 'var(--font-size-h1, 32px)', marginBottom: '8px' }}>Wykresy i historia</h1>
         <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Analizuj dane z Twoich urządzeń w czasie</p>
       </div>
 
@@ -131,7 +131,7 @@ function ChartsHistory() {
         <div className="glass-card" style={{ padding: '24px' }}>
           {headUnits.length > 0 ? (
             <>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
+              <div className="mobile-col" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
                 <select
                   value={selectedHeadUnit}
                   onChange={(e) => setSelectedHeadUnit(e.target.value)}
@@ -144,7 +144,7 @@ function ChartsHistory() {
                   ))}
                 </select>
 
-                <div style={{ display: 'flex', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', padding: '4px' }}>
+                <div style={{ display: 'flex', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', padding: '4px', overflowX: 'auto', maxWidth: '100%' }}>
                   {periods.map(p => (
                     <button
                       key={p.value}
@@ -204,7 +204,7 @@ function ChartsHistory() {
         <div className="glass-card" style={{ padding: '24px' }}>
           {sensors.length > 0 ? (
             <>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
+              <div className="mobile-col" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
                 <select
                   value={selectedSensor}
                   onChange={(e) => setSelectedSensor(e.target.value)}
@@ -217,7 +217,7 @@ function ChartsHistory() {
                   ))}
                 </select>
 
-                <div style={{ display: 'flex', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', padding: '4px' }}>
+                <div style={{ display: 'flex', backgroundColor: 'var(--color-canvas-soft)', borderRadius: 'var(--rounded-md)', padding: '4px', overflowX: 'auto', maxWidth: '100%' }}>
                   {periods.map(p => (
                     <button
                       key={p.value}

@@ -32,17 +32,23 @@ function WateringAnimation({ isWatering }) {
             const width = containerRef.current.offsetWidth;
             const progress = (elapsed - 0.75) / 1.0;
 
+            const isMobile = window.innerWidth <= 768;
+            const baseLeft = isMobile ? -100 : -200;
+            const canWidth = isMobile ? 90 : 180;
+            const spoutOffsetX = isMobile ? 75 : 150;
+            const spoutOffsetY = isMobile ? 70 : 140;
+
             const transformX = (width * 0.35) + progress * (width * 0.30);
 
-            const spoutX = -200 + transformX + 190;
-            const spoutY = containerRef.current.offsetHeight * 0.15 + 140;
+            const spoutX = baseLeft + transformX + spoutOffsetX;
+            const spoutY = containerRef.current.offsetHeight * 0.15 + spoutOffsetY;
 
             const newDrop = {
               id: dropId++,
               x: spoutX + (Math.random() * 20 - 10),
               y: spoutY + (Math.random() * 20 - 10),
-              dx: Math.random() * 40 - 20,
-              dy: 100 + Math.random() * 60
+              dx: Math.random() * (isMobile ? 40 : 80) - (isMobile ? 20 : 40),
+              dy: (isMobile ? 100 : 200) + Math.random() * (isMobile ? 60 : 100)
             };
 
             setDrops(prev => [...prev.slice(-25), newDrop]);

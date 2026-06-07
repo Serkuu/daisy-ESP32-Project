@@ -127,9 +127,9 @@ function Hardware() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
-          <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Twoje Urządzenia</h1>
+      <div className="mobile-col mobile-center" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', gap: '16px' }}>
+        <div className="mobile-center">
+          <h1 style={{ fontSize: 'var(--font-size-h1, 32px)', marginBottom: '8px' }}>Twoje Urządzenia</h1>
           <p style={{ color: 'var(--color-mute)', fontSize: '16px' }}>Połącz się z swoimi czujnikami daisySensor i stacjami daisyHeadUnit, aby monitorować i optymalizować nawadnianie roślin</p>
         </div>
       </div>
@@ -162,7 +162,7 @@ function Hardware() {
       ) : (sensors.length > 0 || headUnits.length > 0) ? (
         <div>
           <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>Sparowane urządzenia</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+          <div className="mobile-grid-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
 
             {sensors.map(sensor => {
               const plant = gardens.flatMap(g => g.plants || []).find(p => p.id === sensor.plantId);

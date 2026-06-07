@@ -11,6 +11,13 @@ function GardenView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [liveData, setLiveData] = useState({ temp: null, moist: null });
 
@@ -131,16 +138,29 @@ function GardenView() {
 
   return (
     <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-        <div>
-          <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>{garden.gardenName}</h1>
+      {isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button variant="secondary" onClick={() => navigate('/dashboard')} style={{ padding: '12px 32px', backgroundColor: 'var(--color-canvas)', border: '2px solid var(--color-ink)', color: 'var(--color-ink)' }}>Wróć</Button>
+            <h1 style={{ fontSize: '32px', margin: 0, fontWeight: '800' }}>{garden.gardenName}</h1>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+            <Button onClick={() => navigate('/add-plant')} style={{ flex: 1 }}>Dodaj roślinę</Button>
+            <Button onClick={handleDeleteGardenClick} style={{ flex: 1, backgroundColor: '#fcd34d', color: '#000', border: 'none' }}>Usuń ogród</Button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <Button variant="secondary" onClick={() => navigate('/dashboard')}>Wróć</Button>
-          <Button onClick={() => navigate('/add-plant')}>Dodaj roślinę</Button>
-          <Button variant="danger" onClick={handleDeleteGardenClick}>Usuń ogród</Button>
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: 'var(--font-size-h1, 32px)', marginBottom: '8px', textAlign: 'left' }}>{garden.gardenName}</h1>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <Button variant="secondary" onClick={() => navigate('/dashboard')}>Wróć</Button>
+            <Button onClick={() => navigate('/add-plant')}>Dodaj roślinę</Button>
+            <Button variant="danger" onClick={handleDeleteGardenClick}>Usuń ogród</Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div style={{ marginBottom: '32px' }}>
         <div>
@@ -157,8 +177,8 @@ function GardenView() {
 
             return (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <p style={{ color: 'var(--color-primary-active)', fontWeight: '600', fontSize: '16px' }}>
+              <div className="mobile-col" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <p style={{ color: 'var(--color-primary-active)', fontWeight: '600', fontSize: '16px', textAlign: 'center' }}>
                   daisyHeadUnit sparowana: {garden.headUnit.macAddress}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: 'var(--rounded-pill)', backgroundColor: isHeadUnitLive ? 'var(--color-primary-pale)' : 'var(--color-canvas)', color: isHeadUnitLive ? 'var(--color-positive-deep)' : 'var(--color-mute)', fontSize: '12px', fontWeight: 'bold' }}>

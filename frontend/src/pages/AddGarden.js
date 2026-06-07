@@ -41,8 +41,8 @@ function AddGarden() {
 
   return (
     <div style={{ padding: '48px', maxWidth: '600px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '36px' }}>Nowy Ogród</h1>
+      <div className="mobile-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', gap: '16px' }}>
+        <h1 style={{ fontSize: 'var(--font-size-h1, 36px)', textAlign: 'center' }}>Nowy Ogród</h1>
         <Button variant="secondary" onClick={() => navigate('/dashboard')}>Wróć</Button>
       </div>
 
